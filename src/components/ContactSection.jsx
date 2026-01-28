@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Github, Linkedin, Send } from "lucide-react";
+import { Mail, Github, Linkedin, Send, CheckCircle } from "lucide-react";
 import { sendEmail } from "../lib/emailjs";
 import toast from "react-hot-toast";
 
@@ -20,21 +20,50 @@ const ContactSection = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validasi basic
+    if (
+      !formData.from_name.trim() ||
+      !formData.from_email.trim() ||
+      !formData.message.trim()
+    ) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
     setSending(true);
 
     try {
+      // Kirim email dengan semua parameter yang diperlukan
       await sendEmail({
-        ...formData,
+        from_name: formData.from_name,
+        from_email: formData.from_email,
+        message: formData.message,
         to_email: import.meta.env.VITE_YOUR_EMAIL,
       });
 
-      toast.success("Message sent successfully! I will get back to you soon.");
+      toast.success("Message sent successfully! I will get back to you soon.", {
+        icon: "✉️",
+        duration: 4000,
+      });
+
+      // Reset form
       setFormData({ from_name: "", from_email: "", message: "" });
     } catch (error) {
       console.error("Email error:", error);
-      toast.error(
-        "Failed to send message. Please try again or email me directly.",
-      );
+
+      // Error handling yang lebih spesifik
+      if (error.text) {
+        toast.error(`Failed to send: ${error.text}`);
+      } else if (error.status === 400) {
+        toast.error(
+          "Invalid email configuration. Please contact the site owner.",
+        );
+      } else {
+        toast.error(
+          "Failed to send message. Please try emailing me directly at padilajalah88@gmail.com",
+        );
+      }
     } finally {
       setSending(false);
     }
@@ -59,7 +88,7 @@ const ContactSection = () => {
       icon: Linkedin,
       label: "LinkedIn",
       value: "Muhammad Fadhillah",
-      href: "https://www.linkedin.com/in/muhammad-fadhillah-52bb73254?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
+      href: "https://www.linkedin.com/in/muhammad-fadhillah-52bb73254",
       gradient: "from-gray-800 to-gray-600",
     },
   ];
@@ -85,30 +114,34 @@ const ContactSection = () => {
                     ? "noopener noreferrer"
                     : undefined
                 }
-                className="bg-white border border-gray-300 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="bg-white border border-gray-300 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 hover:scale-105 group"
               >
                 <div
-                  className={`w-16 h-16 mx-auto mb-4 bg-linear-to-br ${link.gradient} rounded-full flex items-center justify-center`}
+                  className={`w-16 h-16 mx-auto mb-4 bg-linear-to-br ${link.gradient} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
                 >
                   <Icon className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2 text-gray-900">
                   {link.label}
                 </h3>
-                <p className="text-gray-600 text-sm">{link.value}</p>
+                <p className="text-gray-600 text-sm break-all">{link.value}</p>
               </a>
             );
           })}
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white border border-gray-300 rounded-2xl p-8">
+        <div className="bg-white border border-gray-300 rounded-2xl p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-900">
-                Name
+              <label
+                htmlFor="from_name"
+                className="block text-sm font-semibold mb-2 text-gray-900"
+              >
+                Name <span className="text-red-500">*</span>
               </label>
               <input
+                id="from_name"
                 type="text"
                 name="from_name"
                 value={formData.from_name}
@@ -116,14 +149,19 @@ const ContactSection = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300"
                 placeholder="Your name"
                 required
+                disabled={sending}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-900">
-                Email
+              <label
+                htmlFor="from_email"
+                className="block text-sm font-semibold mb-2 text-gray-900"
+              >
+                Email <span className="text-red-500">*</span>
               </label>
               <input
+                id="from_email"
                 type="email"
                 name="from_email"
                 value={formData.from_email}
@@ -131,14 +169,19 @@ const ContactSection = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300"
                 placeholder="your@email.com"
                 required
+                disabled={sending}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-900">
-                Message
+              <label
+                htmlFor="message"
+                className="block text-sm font-semibold mb-2 text-gray-900"
+              >
+                Message <span className="text-red-500">*</span>
               </label>
               <textarea
+                id="message"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
@@ -146,16 +189,29 @@ const ContactSection = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300 resize-none"
                 placeholder="Your message..."
                 required
+                disabled={sending}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.message.length} characters
+              </p>
             </div>
 
             <button
               type="submit"
               disabled={sending}
-              className="w-full px-8 py-4 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-8 py-4 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
             >
-              <Send className="w-5 h-5" />
-              {sending ? "Sending..." : "Send Message"}
+              {sending ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  Send Message
+                </>
+              )}
             </button>
           </form>
         </div>

@@ -1,13 +1,17 @@
-import { useState, useEffect } from "react";
-import { MessageCircle, Github, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MessageCircle, Github } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
+import CommentItem from "./CommentReply";
 
 const CommentsSection = () => {
   const [user, setUser] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     // Check current user session
@@ -22,20 +26,51 @@ const CommentsSection = () => {
       setUser(session?.user ?? null);
     });
 
-    // Load comments
+    // Load comments immediately
     loadComments();
 
-    // Subscribe to real-time changes
+    // Subscribe to real-time changes with proper event handling
     const channel = supabase
-      .channel("comments")
+      .channel("comments-channel")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "comments" },
-        () => {
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "comments" 
+        },
+        (payload) => {
+          console.log("New comment:", payload);
           loadComments();
         },
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        { 
+          event: "DELETE", 
+          schema: "public", 
+          table: "comments" 
+        },
+        (payload) => {
+          console.log("Comment deleted:", payload);
+          loadComments();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { 
+          event: "UPDATE", 
+          schema: "public", 
+          table: "comments" 
+        },
+        (payload) => {
+          console.log("Comment updated:", payload);
+          loadComments();
+        },
+      )
+      .subscribe((status) => {
+        console.log("Subscription status:", status);
+      });
 
     return () => {
       subscription.unsubscribe();
@@ -43,17 +78,56 @@ const CommentsSection = () => {
     };
   }, []);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [comments]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const loadComments = async () => {
-    const { data, error } = await supabase
+    // Load parent comments (where parent_id is null)
+    const { data: parentComments, error: parentError } = await supabase
       .from("comments")
       .select("*")
-      .order("created_at", { ascending: false });
+      .is("parent_id", null)
+      .order("created_at", { ascending: true });
 
-    if (error) {
-      console.error("Error loading comments:", error);
-    } else {
-      setComments(data || []);
+    if (parentError) {
+      console.error("Error loading parent comments:", parentError);
+      return;
     }
+
+    // Load all replies
+    const { data: allReplies, error: repliesError } = await supabase
+      .from("comments")
+      .select("*")
+      .not("parent_id", "is", null)
+      .order("created_at", { ascending: true });
+
+    if (repliesError) {
+      console.error("Error loading replies:", repliesError);
+      return;
+    }
+
+    // Group replies by parent_id
+    const repliesByParent = {};
+    allReplies?.forEach((reply) => {
+      if (!repliesByParent[reply.parent_id]) {
+        repliesByParent[reply.parent_id] = [];
+      }
+      repliesByParent[reply.parent_id].push(reply);
+    });
+
+    // Attach replies to parent comments
+    const commentsWithReplies =
+      parentComments?.map((comment) => ({
+        ...comment,
+        replies: repliesByParent[comment.id] || [],
+      })) || [];
+
+    setComments(commentsWithReplies);
   };
 
   const handleSignIn = async (provider) => {
@@ -76,54 +150,76 @@ const CommentsSection = () => {
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    const commentToPost = replyingTo ? replyText : newComment;
+
+    if (!commentToPost.trim()) return;
 
     setLoading(true);
 
-    const { error } = await supabase.from("comments").insert([
-      {
-        user_id: user.id,
-        user_name: user.user_metadata.full_name || user.email.split("@")[0],
-        user_email: user.email,
-        user_avatar: user.user_metadata.avatar_url,
-        comment: newComment,
-      },
-    ]);
+    const commentData = {
+      user_id: user.id,
+      user_name: user.user_metadata.full_name || user.email.split("@")[0],
+      user_email: user.email,
+      user_avatar: user.user_metadata.avatar_url,
+      comment: commentToPost,
+      parent_id: replyingTo || null,
+    };
 
-    setLoading(false);
+    const { error } = await supabase.from("comments").insert([commentData]);
 
     if (error) {
       toast.error("Failed to post comment");
       console.error(error);
+      setLoading(false);
     } else {
-      toast.success("Comment posted!");
+      toast.success(replyingTo ? "Reply posted!" : "Comment posted!");
       setNewComment("");
+      setReplyText("");
+      setReplyingTo(null);
+      setLoading(false);
+      
+      // Force reload comments immediately
+      await loadComments();
     }
   };
 
   const handleDeleteComment = async (id) => {
+    // Hapus replies terlebih dahulu jika ada
+    const { error: repliesError } = await supabase
+      .from("comments")
+      .delete()
+      .eq("parent_id", id);
+
+    if (repliesError) {
+      console.error("Error deleting replies:", repliesError);
+    }
+
+    // Hapus komentar utama
     const { error } = await supabase.from("comments").delete().eq("id", id);
 
     if (error) {
       toast.error("Failed to delete comment");
     } else {
       toast.success("Comment deleted");
+      
+      // Force reload comments immediately
+      await loadComments();
     }
+  };
+
+  const handleReply = (commentId, userName) => {
+    setReplyingTo(commentId);
+    setReplyText(`@${userName} `);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
+    setReplyText("");
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -194,90 +290,101 @@ const CommentsSection = () => {
               </div>
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
               >
                 Sign Out
               </button>
             </div>
 
+            {/* Reply indicator */}
+            {replyingTo && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-blue-700">Replying to a comment</p>
+                  <button
+                    onClick={cancelReply}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmitComment}>
               <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Share your thoughts..."
-                rows="4"
+                value={replyingTo ? replyText : newComment}
+                onChange={(e) =>
+                  replyingTo
+                    ? setReplyText(e.target.value)
+                    : setNewComment(e.target.value)
+                }
+                placeholder={
+                  replyingTo ? "Write your reply..." : "Share your thoughts..."
+                }
+                rows="3"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300 resize-none"
                 required
               />
-              <button
-                type="submit"
-                disabled={loading || !newComment.trim()}
-                className="mt-4 px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Posting..." : "Post Comment"}
-              </button>
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="submit"
+                  disabled={
+                    loading || !(replyingTo ? replyText : newComment).trim()
+                  }
+                  className="px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {loading
+                    ? "Posting..."
+                    : replyingTo
+                      ? "Post Reply"
+                      : "Post Comment"}
+                </button>
+
+                {replyingTo && (
+                  <button
+                    type="button"
+                    onClick={cancelReply}
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         )}
 
-        {/* Comments List */}
-        {comments.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <MessageCircle className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className="text-2xl font-semibold mb-3 text-gray-900">
-              No comments yet
-            </h3>
-            <p className="text-gray-600 text-lg">
-              Be the first to share your thoughts!
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="bg-white border border-gray-300 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex items-start gap-4">
-                  <img
-                    src={
-                      comment.user_avatar ||
-                      `https://ui-avatars.com/api/?name=${comment.user_name}`
-                    }
-                    alt={comment.user_name}
-                    className="w-12 h-12 rounded-full flex shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          {comment.user_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(comment.created_at)}
-                        </p>
-                      </div>
-                      {user && user.id === comment.user_id && (
-                        <button
-                          onClick={() => handleDeleteComment(comment.id)}
-                          className="text-red-500 hover:text-red-700 p-2"
-                          title="Delete comment"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-gray-700 whitespace-pre-wrap wrap-break-word">
-                      {comment.comment}
-                    </p>
-                  </div>
-                </div>
+        {/* Comments List - CHAT STYLE */}
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 h-150 overflow-y-auto">
+          {comments.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center">
+              <div className="w-24 h-24 mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                <MessageCircle className="w-12 h-12 text-gray-400" />
               </div>
-            ))}
-          </div>
-        )}
+              <h3 className="text-2xl font-semibold mb-3 text-gray-900">
+                No comments yet
+              </h3>
+              <p className="text-gray-600 text-lg">
+                Be the first to share your thoughts!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {comments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  user={user}
+                  onDelete={handleDeleteComment}
+                  onReply={handleReply}
+                  formatDate={formatDate}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
