@@ -7,33 +7,48 @@ import ProjectsSection from "./components/ProjectsSection";
 import CommentsSection from "./components/CommentsSection";
 import ContactSection from "./components/ContactSection";
 
-
 function App() {
   const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { threshold: 0.5 },
-    );
+    // Scroll ke top saat pertama kali load/refresh halaman
+    window.scrollTo(0, 0);
 
-    document.querySelectorAll("section").forEach((section) => {
-      observer.observe(section);
-    });
+    // Remove hash dari URL jika ada (dari OAuth redirect)
+    if (window.location.hash) {
+      // Use replaceState to remove hash without triggering a page reload
+      window.history.replaceState(null, null, window.location.pathname);
+    }
+  }, []);
 
-    return () => observer.disconnect();
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll("section[id]");
+      const scrollPos = window.scrollY + 100; // offset untuk navbar
+
+      sections.forEach((section) => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
+        const sectionId = section.getAttribute("id");
+
+        if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+          setActiveSection(sectionId);
+        }
+      });
+    };
+
+    // Set initial active section
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div className="min-h-screen text-gray-900 pb-32">
       <Toaster position="top-right" />
-      
+
+      <Navigation activeSection={activeSection} />
 
       <div className="relative z-10">
         <AboutSection />
@@ -42,8 +57,6 @@ function App() {
         <CommentsSection />
         <ContactSection />
       </div>
-
-      <Navigation activeSection={activeSection} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ const CommentsSection = () => {
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const hasScrolledToBottom = useRef(false);
 
   useEffect(() => {
     // Check current user session
@@ -34,10 +35,10 @@ const CommentsSection = () => {
       .channel("comments-channel")
       .on(
         "postgres_changes",
-        { 
-          event: "INSERT", 
-          schema: "public", 
-          table: "comments" 
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "comments",
         },
         (payload) => {
           console.log("New comment:", payload);
@@ -46,10 +47,10 @@ const CommentsSection = () => {
       )
       .on(
         "postgres_changes",
-        { 
-          event: "DELETE", 
-          schema: "public", 
-          table: "comments" 
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "comments",
         },
         (payload) => {
           console.log("Comment deleted:", payload);
@@ -58,10 +59,10 @@ const CommentsSection = () => {
       )
       .on(
         "postgres_changes",
-        { 
-          event: "UPDATE", 
-          schema: "public", 
-          table: "comments" 
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "comments",
         },
         (payload) => {
           console.log("Comment updated:", payload);
@@ -79,7 +80,11 @@ const CommentsSection = () => {
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
+    // Only scroll to bottom after initial load and when new comments are added
+    // Don't scroll on page refresh
+    if (hasScrolledToBottom.current && comments.length > 0) {
+      scrollToBottom();
+    }
   }, [comments]);
 
   const scrollToBottom = () => {
@@ -177,7 +182,10 @@ const CommentsSection = () => {
       setReplyText("");
       setReplyingTo(null);
       setLoading(false);
-      
+
+      // Enable auto-scroll for new comments
+      hasScrolledToBottom.current = true;
+
       // Force reload comments immediately
       await loadComments();
     }
@@ -201,7 +209,7 @@ const CommentsSection = () => {
       toast.error("Failed to delete comment");
     } else {
       toast.success("Comment deleted");
-      
+
       // Force reload comments immediately
       await loadComments();
     }
@@ -210,6 +218,8 @@ const CommentsSection = () => {
   const handleReply = (commentId, userName) => {
     setReplyingTo(commentId);
     setReplyText(`@${userName} `);
+    // Enable auto-scroll when replying
+    hasScrolledToBottom.current = true;
   };
 
   const cancelReply = () => {
