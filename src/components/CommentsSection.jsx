@@ -383,7 +383,7 @@ const CommentsSection = () => {
                 <CommentItem
                   key={comment.id}
                   comment={comment}
-                  user={user}
+                  currentUser={user}
                   onDelete={handleDeleteComment}
                   onReply={handleReply}
                   formatDate={formatDate}
