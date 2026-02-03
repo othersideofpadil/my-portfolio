@@ -60,6 +60,13 @@ const CommentsSection = () => {
             session.user.email?.split("@")[0] ||
             "User";
           toast.success(`Welcome, ${displayName}!`);
+
+          // Scroll ke comments section setelah login
+          setTimeout(() => {
+            document
+              .getElementById("comments")
+              ?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
         }
       }
     });
@@ -144,7 +151,7 @@ const CommentsSection = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/#comments`,
+        redirectTo: window.location.origin,
       },
     });
 
