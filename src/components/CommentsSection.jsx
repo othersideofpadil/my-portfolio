@@ -13,71 +13,74 @@ const CommentsSection = () => {
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const messagesEndRef = useRef(null);
   const hasScrolledToBottom = useRef(false);
 
+  // Initialize auth
   useEffect(() => {
-    // Check current user session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    let isMounted = true;
 
-    // Listen for auth changes
+    const initializeAuth = async () => {
+      try {
+        // Get current session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (isMounted) {
+          setUser(session?.user ?? null);
+          setAuthLoading(false);
+
+          if (session?.user) {
+            console.log("✅ Logged in:", session.user.email);
+          }
+        }
+      } catch (error) {
+        console.error("Auth init error:", error);
+        if (isMounted) setAuthLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Auth state listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event);
+
+      if (isMounted) {
+        setUser(session?.user ?? null);
+        setAuthLoading(false);
+
+        if (event === "SIGNED_IN" && session?.user) {
+          const displayName =
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split("@")[0] ||
+            "User";
+          toast.success(`Welcome, ${displayName}!`);
+        }
+      }
     });
 
-    // Load comments immediately
+    // Load comments
     loadComments();
 
-    // Subscribe to real-time changes with proper event handling
+    // Realtime subscription
     const channel = supabase
-      .channel("comments-channel")
+      .channel("comments-realtime")
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "comments",
-        },
-        (payload) => {
-          console.log("New comment:", payload);
-          loadComments();
-        },
+        { event: "*", schema: "public", table: "comments" },
+        () => loadComments(),
       )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "comments",
-        },
-        (payload) => {
-          console.log("Comment deleted:", payload);
-          loadComments();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "comments",
-        },
-        (payload) => {
-          console.log("Comment updated:", payload);
-          loadComments();
-        },
-      )
-      .subscribe((status) => {
-        console.log("Subscription status:", status);
-      });
+      .subscribe();
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -144,6 +147,7 @@ const CommentsSection = () => {
         redirectTo: window.location.origin,
       },
     });
+
     if (error) {
       toast.error("Failed to sign in");
       console.error(error);
@@ -255,7 +259,12 @@ const CommentsSection = () => {
         </motion.h2>
 
         {/* Sign In / Comment Form */}
-        {!user ? (
+        {authLoading ? (
+          <div className="bg-white border border-gray-300 rounded-2xl p-8 mb-8 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <span className="ml-3 text-gray-600">Loading...</span>
+          </div>
+        ) : !user ? (
           <div className="bg-white border border-gray-300 rounded-2xl p-8 mb-8">
             <h3 className="text-xl font-semibold mb-6 text-gray-900">
               Sign in to leave a comment
