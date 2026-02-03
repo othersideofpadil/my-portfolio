@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Mail, Github, Linkedin, Send, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
 import { sendEmail } from "../lib/emailjs";
 import toast from "react-hot-toast";
 
@@ -94,18 +95,31 @@ const ContactSection = () => {
   ];
 
   return (
-    <section id="contact" className="py-20 px-4">
+    <motion.section
+      id="contact"
+      className="py-12 sm:py-16 md:py-20 px-4"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.6 }}
+    >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-linear-to-r from-black to-gray-600 bg-clip-text text-transparent">
+        <motion.h2
+          className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 sm:mb-12 md:mb-16 bg-linear-to-r from-black to-gray-600 bg-clip-text text-transparent"
+          initial={{ opacity: 0, y: -30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           Let's Work Together!
-        </h2>
+        </motion.h2>
 
         {/* Contact Links */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10 md:mb-12">
           {contactLinks.map((link, index) => {
             const Icon = link.icon;
             return (
-              <a
+              <motion.a
                 key={index}
                 href={link.href}
                 target={link.href.startsWith("http") ? "_blank" : undefined}
@@ -114,7 +128,12 @@ const ContactSection = () => {
                     ? "noopener noreferrer"
                     : undefined
                 }
-                className="bg-white border border-gray-300 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+                className="bg-white border border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center hover:shadow-xl transition-all duration-300 group"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
               >
                 <div
                   className={`w-16 h-16 mx-auto mb-4 bg-linear-to-br ${link.gradient} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
@@ -125,13 +144,19 @@ const ContactSection = () => {
                   {link.label}
                 </h3>
                 <p className="text-gray-600 text-sm break-all">{link.value}</p>
-              </a>
+              </motion.a>
             );
           })}
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white border border-gray-300 rounded-2xl p-8 shadow-lg">
+        <motion.div
+          className="bg-white border border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
@@ -214,9 +239,9 @@ const ContactSection = () => {
               )}
             </button>
           </form>
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

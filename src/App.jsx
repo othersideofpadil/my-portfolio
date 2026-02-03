@@ -6,9 +6,12 @@ import EducationSection from "./components/EducationSection";
 import ProjectsSection from "./components/ProjectsSection";
 import CommentsSection from "./components/CommentsSection";
 import ContactSection from "./components/ContactSection";
+import LoadingScreen from "./components/LoadingScreen";
+import Footer from "./components/Footer";
 
 function App() {
   const [activeSection, setActiveSection] = useState("about");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Scroll ke top saat pertama kali load/refresh halaman
@@ -45,19 +48,27 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen text-gray-900 pb-32">
-      <Toaster position="top-right" />
+    <>
+      {isLoading && (
+        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
+      )}
 
-      <Navigation activeSection={activeSection} />
+      <div className="min-h-screen text-gray-900 w-full overflow-x-hidden">
+        <Toaster position="top-right" />
 
-      <div className="relative z-10">
-        <AboutSection />
-        <EducationSection />
-        <ProjectsSection />
-        <CommentsSection />
-        <ContactSection />
+        <Navigation activeSection={activeSection} />
+
+        <div className="relative z-10 w-full">
+          <AboutSection />
+          <EducationSection />
+          <ProjectsSection />
+          <CommentsSection />
+          <ContactSection />
+        </div>
+
+        <Footer />
       </div>
-    </div>
+    </>
   );
 }
 

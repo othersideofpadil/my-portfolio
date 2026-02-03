@@ -1,5 +1,6 @@
 import { Download, Github } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   SiJavascript,
   SiTypescript,
@@ -46,14 +47,23 @@ const AboutSection = () => {
   }, []);
 
   return (
-    <section
+    <motion.section
       id="about"
       className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6 }}
     >
       <div className="max-w-7xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* ================= LEFT SIDE - INTRODUCTION ================= */}
-          <div className="order-2 lg:order-1 space-y-6">
+          <motion.div
+            className="order-2 lg:order-1 space-y-6"
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             <div>
               {/* Greeting */}
               <div className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-semibold text-gray-700 mb-4">
@@ -62,7 +72,7 @@ const AboutSection = () => {
 
               {/* Sliding Animation in Button */}
               <div className="text-lg sm:text-xl font-medium text-gray-600 leading-relaxed">
-                I'm Muhammad Fadhillah, passionate about {" "}
+                I'm Muhammad Fadhillah, passionate about{" "}
                 <span className="inline-flex items-center bg-white border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-lg shadow-md overflow-hidden relative align-middle whitespace-nowrap">
                   <span className="relative h-7 w-48 overflow-hidden">
                     <span
@@ -126,16 +136,21 @@ const AboutSection = () => {
                 GitHub Profile
               </a>
             </div>
-          </div>
+          </motion.div>
 
-          {/* ================= RIGHT SIDE - IMAGE ================= */}
-          <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+          <motion.div
+            className="order-1 lg:order-2 flex justify-center lg:justify-end"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
             <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
               {/* Wave Ring */}
               <div className="absolute inset-0 rounded-3xl wave-ring" />
 
               {/* Image Container */}
-              <div className="relative w-full h-full rounded-3xl bg-linear-to-br from-gray-100 to-gray-200 p-2 shadow-2xl overflow-hidden">
+              <div className="relative w-full h-full rounded-3xl bg-linear-to-br from-gray-200 to-gray-300 p-2 shadow-2xl overflow-hidden">
                 <img
                   src="/profile.jpg"
                   alt="Profile"
@@ -143,7 +158,7 @@ const AboutSection = () => {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -166,17 +181,12 @@ const AboutSection = () => {
         }
 
         .wave-ring {
-          background: linear-gradient(
-            135deg,
-            rgba(75, 85, 99, 0.3),
-            rgba(156, 163, 175, 0.2),
-            rgba(75, 85, 99, 0.3)
-          );
+          background: black radial-gradient(circle, rgba(0, 0, 0, 0.1) 20%, transparent 70%);
           filter: blur(20px);
           animation: wave 8s ease-in-out infinite;
         }
       `}</style>
-    </section>
+    </motion.section>
   );
 };
 
