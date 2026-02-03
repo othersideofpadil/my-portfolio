@@ -20,6 +20,7 @@ const CommentsSection = () => {
   // Initialize auth
   useEffect(() => {
     let isMounted = true;
+    let hasShownWelcome = false;
 
     const initializeAuth = async () => {
       try {
@@ -54,7 +55,9 @@ const CommentsSection = () => {
         setUser(session?.user ?? null);
         setAuthLoading(false);
 
-        if (event === "SIGNED_IN" && session?.user) {
+        // Only show welcome toast once on SIGNED_IN event
+        if (event === "SIGNED_IN" && session?.user && !hasShownWelcome) {
+          hasShownWelcome = true;
           const displayName =
             session.user.user_metadata?.full_name ||
             session.user.email?.split("@")[0] ||
