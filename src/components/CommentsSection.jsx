@@ -32,13 +32,8 @@ const CommentsSection = () => {
         if (isMounted) {
           setUser(session?.user ?? null);
           setAuthLoading(false);
-
-          if (session?.user) {
-            console.log("✅ Logged in:", session.user.email);
-          }
         }
       } catch (error) {
-        console.error("Auth init error:", error);
         if (isMounted) setAuthLoading(false);
       }
     };
@@ -49,8 +44,6 @@ const CommentsSection = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth event:", event);
-
       if (isMounted) {
         setUser(session?.user ?? null);
         setAuthLoading(false);
