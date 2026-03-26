@@ -10,7 +10,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import Footer from "./components/Footer";
 
 function App() {
-  const [activeSection, setActiveSection] = useState("about");
+  const [activeSection, setActiveSection] = useState<string>("about");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,13 +20,13 @@ function App() {
     // Remove hash dari URL jika ada (dari OAuth redirect)
     if (window.location.hash) {
       // Use replaceState to remove hash without triggering a page reload
-      window.history.replaceState(null, null, window.location.pathname);
+      window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = document.querySelectorAll("section[id]");
+      const sections = document.querySelectorAll<HTMLElement>("section[id]");
       const scrollPos = window.scrollY + 100; // offset untuk navbar
 
       sections.forEach((section) => {
@@ -35,7 +35,7 @@ function App() {
         const sectionId = section.getAttribute("id");
 
         if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-          setActiveSection(sectionId);
+          setActiveSection(sectionId ?? "about");
         }
       });
     };

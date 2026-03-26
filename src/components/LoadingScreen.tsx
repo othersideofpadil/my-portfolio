@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 
-const LoadingScreen = ({ onLoadingComplete }) => {
+type LoadingScreenProps = {
+  onLoadingComplete: () => void;
+};
+
+const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [isAnimating, setIsAnimating] = useState(true);
 

@@ -1,25 +1,34 @@
 import { useState } from "react";
-import { Mail, Github, Linkedin, Send, CheckCircle } from "lucide-react";
+import { Mail, Github, Linkedin, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { sendEmail } from "../lib/emailjs";
 import toast from "react-hot-toast";
+import type { ChangeEvent, FormEvent } from "react";
+
+type ContactFormData = {
+  from_name: string;
+  from_email: string;
+  message: string;
+};
 
 const ContactSection = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContactFormData>({
     from_name: "",
     from_email: "",
     message: "",
   });
   const [sending, setSending] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validasi basic
@@ -50,13 +59,23 @@ const ContactSection = () => {
 
       // Reset form
       setFormData({ from_name: "", from_email: "", message: "" });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Email error:", error);
 
       // Error handling yang lebih spesifik
-      if (error.text) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "text" in error &&
+        typeof error.text === "string"
+      ) {
         toast.error(`Failed to send: ${error.text}`);
-      } else if (error.status === 400) {
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        error.status === 400
+      ) {
         toast.error(
           "Invalid email configuration. Please contact the site owner.",
         );
@@ -210,7 +229,7 @@ const ContactSection = () => {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                rows="5"
+                rows={5}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300 resize-none"
                 placeholder="Your message..."
                 required

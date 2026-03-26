@@ -1,12 +1,22 @@
 import { useState, useEffect, useRef } from "react";
 import { GraduationCap, Award, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
+
+type EducationItem = {
+  period: string;
+  title: string;
+  institution: string;
+  description: string;
+  side: "left" | "right";
+  icon: LucideIcon;
+};
 
 const EducationSection = () => {
-  const [visibleItems, setVisibleItems] = useState([]);
-  const itemRefs = useRef([]);
+  const [visibleItems, setVisibleItems] = useState<number[]>([]);
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
-  const education = [
+  const education: EducationItem[] = [
     {
       period: "2022 – Present",
       title: "Bachelor's Degree Candidate in Informatics Engineering",
@@ -92,7 +102,9 @@ const EducationSection = () => {
             return (
               <div
                 key={index}
-                ref={(el) => (itemRefs.current[index] = el)}
+                ref={(el) => {
+                  itemRefs.current[index] = el;
+                }}
                 className={`mb-8 sm:mb-10 md:mb-12 relative transition-all duration-700 ${
                   isVisible
                     ? "opacity-100 translate-y-0"

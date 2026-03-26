@@ -5,16 +5,48 @@ import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
 import CommentItem from "./CommentReply";
+import type { FormEvent, ChangeEvent } from "react";
+import type { Provider, User } from "@supabase/supabase-js";
+
+type CommentReplyItem = {
+  id: number;
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  user_avatar: string | null;
+  comment: string;
+  parent_id: number | null;
+  created_at: string;
+};
+
+type CommentWithReplies = CommentReplyItem & {
+  replies: CommentReplyItem[];
+};
+
+const getUserAvatarUrl = (user: User | null): string | null => {
+  if (!user) return null;
+
+  const metadata = user.user_metadata as Record<string, unknown> | undefined;
+  const avatarFromMetadata =
+    (typeof metadata?.avatar_url === "string" && metadata.avatar_url) ||
+    (typeof metadata?.picture === "string" && metadata.picture) ||
+    (typeof metadata?.photo_url === "string" && metadata.photo_url) ||
+    (typeof metadata?.profile_image_url === "string" &&
+      metadata.profile_image_url) ||
+    null;
+
+  return avatarFromMetadata;
+};
 
 const CommentsSection = () => {
-  const [user, setUser] = useState(null);
-  const [comments, setComments] = useState([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const hasScrolledToBottom = useRef(false);
 
   // Initialize auth
@@ -33,7 +65,7 @@ const CommentsSection = () => {
           setUser(session?.user ?? null);
           setAuthLoading(false);
         }
-      } catch (error) {
+      } catch {
         if (isMounted) setAuthLoading(false);
       }
     };
@@ -125,7 +157,7 @@ const CommentsSection = () => {
     }
 
     // Group replies by parent_id
-    const repliesByParent = {};
+    const repliesByParent: Record<number, CommentReplyItem[]> = {};
     allReplies?.forEach((reply) => {
       if (!repliesByParent[reply.parent_id]) {
         repliesByParent[reply.parent_id] = [];
@@ -143,7 +175,7 @@ const CommentsSection = () => {
     setComments(commentsWithReplies);
   };
 
-  const handleSignIn = async (provider) => {
+  const handleSignIn = async (provider: Provider) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -162,7 +194,7 @@ const CommentsSection = () => {
     toast.success("Signed out successfully");
   };
 
-  const handleSubmitComment = async (e) => {
+  const handleSubmitComment = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const commentToPost = replyingTo ? replyText : newComment;
 
@@ -170,11 +202,19 @@ const CommentsSection = () => {
 
     setLoading(true);
 
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const commentData = {
       user_id: user.id,
-      user_name: user.user_metadata.full_name || user.email.split("@")[0],
-      user_email: user.email,
-      user_avatar: user.user_metadata.avatar_url,
+      user_name:
+        (user.user_metadata.full_name as string | undefined) ||
+        user.email?.split("@")[0] ||
+        "User",
+      user_email: user.email || "",
+      user_avatar: getUserAvatarUrl(user),
       comment: commentToPost,
       parent_id: replyingTo || null,
     };
@@ -200,31 +240,63 @@ const CommentsSection = () => {
     }
   };
 
-  const handleDeleteComment = async (id) => {
-    // Hapus replies terlebih dahulu jika ada
-    const { error: repliesError } = await supabase
+  const handleDeleteComment = async (id: number) => {
+    const { data: targetComment, error: targetError } = await supabase
+      .from("comments")
+      .select("id,parent_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (targetError || !targetComment) {
+      toast.error("Comment not found or already deleted");
+      return;
+    }
+
+    if (targetComment.parent_id === null) {
+      const { error: repliesError } = await supabase
+        .from("comments")
+        .delete()
+        .eq("parent_id", id);
+
+      if (repliesError) {
+        console.error("Error deleting replies:", repliesError);
+      }
+    }
+
+    const { data: deletedRows, error: deleteError } = await supabase
       .from("comments")
       .delete()
-      .eq("parent_id", id);
+      .eq("id", id)
+      .select("id");
 
-    if (repliesError) {
-      console.error("Error deleting replies:", repliesError);
-    }
-
-    // Hapus komentar utama
-    const { error } = await supabase.from("comments").delete().eq("id", id);
-
-    if (error) {
+    if (deleteError) {
       toast.error("Failed to delete comment");
-    } else {
-      toast.success("Comment deleted");
-
-      // Force reload comments immediately
-      await loadComments();
+      console.error("Error deleting comment:", deleteError);
+      return;
     }
+
+    if (!deletedRows || deletedRows.length === 0) {
+      toast.error("Delete denied by database policy");
+      return;
+    }
+
+    // Immediate UI update after confirmed deletion
+    setComments((prevComments) =>
+      prevComments
+        .filter((comment) => comment.id !== id)
+        .map((comment) => ({
+          ...comment,
+          replies: comment.replies.filter((reply) => reply.id !== id),
+        })),
+    );
+
+    toast.success("Comment deleted");
+
+    // Keep local state synced with source of truth
+    await loadComments();
   };
 
-  const handleReply = (commentId, userName) => {
+  const handleReply = (commentId: number, userName: string) => {
     setReplyingTo(commentId);
     setReplyText(`@${userName} `);
     // Enable auto-scroll when replying
@@ -234,11 +306,6 @@ const CommentsSection = () => {
   const cancelReply = () => {
     setReplyingTo(null);
     setReplyText("");
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -295,7 +362,7 @@ const CommentsSection = () => {
               <div className="flex items-center gap-3">
                 <img
                   src={
-                    user.user_metadata.avatar_url ||
+                    getUserAvatarUrl(user) ||
                     `https://ui-avatars.com/api/?name=${user.email}`
                   }
                   alt={user.email}
@@ -303,7 +370,7 @@ const CommentsSection = () => {
                 />
                 <div>
                   <p className="font-semibold text-gray-900">
-                    {user.user_metadata.full_name || user.email.split("@")[0]}
+                    {user.user_metadata.full_name || user.email?.split("@")[0]}
                   </p>
                   <p className="text-sm text-gray-600">{user.email}</p>
                 </div>
@@ -334,7 +401,7 @@ const CommentsSection = () => {
             <form onSubmit={handleSubmitComment}>
               <textarea
                 value={replyingTo ? replyText : newComment}
-                onChange={(e) =>
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                   replyingTo
                     ? setReplyText(e.target.value)
                     : setNewComment(e.target.value)
@@ -342,7 +409,7 @@ const CommentsSection = () => {
                 placeholder={
                   replyingTo ? "Write your reply..." : "Share your thoughts..."
                 }
-                rows="3"
+                rows={3}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300 resize-none"
                 required
               />
@@ -398,7 +465,6 @@ const CommentsSection = () => {
                   currentUser={user}
                   onDelete={handleDeleteComment}
                   onReply={handleReply}
-                  formatDate={formatDate}
                 />
               ))}
               <div ref={messagesEndRef} />

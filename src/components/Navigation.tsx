@@ -8,10 +8,14 @@ import {
   X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import type { MouseEvent } from "react";
 
-const Navigation = ({ activeSection }) => {
+type NavigationProps = {
+  activeSection: string;
+};
+
+const Navigation = ({ activeSection }: NavigationProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   const navItems = [
     { id: "about", icon: Home, label: "Home" },
@@ -21,18 +25,9 @@ const Navigation = ({ activeSection }) => {
     { id: "contact", icon: Mail, label: "Contact" },
   ];
 
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Close mobile menu on ESC key
   useEffect(() => {
-    const handleEscape = (e) => {
+    const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsMobileMenuOpen(false);
       }
@@ -42,9 +37,10 @@ const Navigation = ({ activeSection }) => {
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const handleNavClick = (e) => {
+  const handleNavClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    const targetId = e.currentTarget.getAttribute("href").slice(1);
+    const href = e.currentTarget.getAttribute("href") ?? "";
+    const targetId = href.slice(1);
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {
