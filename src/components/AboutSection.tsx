@@ -121,10 +121,14 @@ const AboutSection = () => {
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <button className="px-6 py-3 bg-black text-white rounded-full text-sm font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
+              <a
+                href="/cv/Muhammad-Fadhillah-CV.pdf"
+                download="Muhammad-Fadhillah-CV.pdf"
+                className="px-6 py-3 bg-black text-white rounded-full text-sm font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+              >
                 <Download className="w-4 h-4" />
                 Download CV
-              </button>
+              </a>
 
               <a
                 href="https://github.com/othersideofpadil"

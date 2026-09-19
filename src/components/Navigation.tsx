@@ -19,7 +19,7 @@ const Navigation = ({ activeSection }: NavigationProps) => {
 
   const navItems = [
     { id: "about", icon: Home, label: "Home" },
-    { id: "education", icon: GraduationCap, label: "Education" },
+    // { id: "education", icon: GraduationCap, label: "Education" },
     { id: "projects", icon: Folder, label: "Projects" },
     { id: "comments", icon: MessageSquare, label: "Comments" },
     { id: "contact", icon: Mail, label: "Contact" },

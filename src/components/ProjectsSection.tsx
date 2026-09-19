@@ -40,35 +40,7 @@ const ProjectsSection = () => {
       },
     },
 
-    {
-      title: "Arus Kas Lofomo Kopi",
-      description:
-        "A cash flow web application for Lofomo Kopi, a coffee shop in Depok.",
-      image:
-        "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&h=400&fit=crop",
-      tags: ["Laravel", "Tailwind CSS", "MySQL"],
-      github: "https://github.com/othersideofpadil/arus_kas_lofomo_kopi",
-    },
 
-    {
-      title: "Glamoura E-commerce Platform",
-      description:
-        "Glamoura is a e-commerce platform for fashion with seamless user experience and I built it as the frontend.",
-      image:
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop",
-      tags: ["React", "Tailwind CSS", "MySQL"],
-      github:
-        "https://github.com/othersideofpadil/frontend-e-commerce-fashion-app",
-    },
-
-    {
-      title: "Movie App",
-      description: "A movie discovery app that allows users to explore movies.",
-      image:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-      tags: ["React", "TMDB API", "CSS Modules"],
-      github: "https://github.com/othersideofpadil/frontend2024",
-    },
   ];
 
   const projectCards: Testimonial[] = projects.map((project) => {
@@ -110,7 +82,7 @@ const ProjectsSection = () => {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Featured Projects
+          Lasted Projects
         </motion.h2>
 
         <div className="rounded-3xl border border-gray-200 bg-white/70 shadow-sm backdrop-blur-sm">

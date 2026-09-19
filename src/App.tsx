@@ -60,7 +60,7 @@ function App() {
 
         <div className="relative z-10 w-full">
           <AboutSection />
-          <EducationSection />
+          {/* <EducationSection /> */}
           <ProjectsSection />
           <CommentsSection />
           <ContactSection />
