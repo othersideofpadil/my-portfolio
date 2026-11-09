@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Github } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { motion } from "framer-motion";
-import { supabase } from "../lib/supabase";
+import { getSupabaseClient, supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
 import CommentItem from "./CommentReply";
 import type { FormEvent, ChangeEvent } from "react";
@@ -38,7 +38,9 @@ const getUserAvatarUrl = (user: User | null): string | null => {
   return avatarFromMetadata;
 };
 
-const CommentsSection = () => {
+const CommentsSectionContent = () => {
+  const client = getSupabaseClient();
+
   const [user, setUser] = useState<User | null>(null);
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -59,7 +61,7 @@ const CommentsSection = () => {
         // Get current session
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await client.auth.getSession();
 
         if (isMounted) {
           setUser(session?.user ?? null);
@@ -75,7 +77,7 @@ const CommentsSection = () => {
     // Auth state listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = client.auth.onAuthStateChange((event, session) => {
       if (isMounted) {
         setUser(session?.user ?? null);
         setAuthLoading(false);
@@ -103,7 +105,7 @@ const CommentsSection = () => {
     loadComments();
 
     // Realtime subscription
-    const channel = supabase
+    const channel = client
       .channel("comments-realtime")
       .on(
         "postgres_changes",
@@ -115,7 +117,7 @@ const CommentsSection = () => {
     return () => {
       isMounted = false;
       subscription.unsubscribe();
-      supabase.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, []);
 
@@ -133,7 +135,7 @@ const CommentsSection = () => {
 
   const loadComments = async () => {
     // Load parent comments (where parent_id is null)
-    const { data: parentComments, error: parentError } = await supabase
+    const { data: parentComments, error: parentError } = await client
       .from("comments")
       .select("*")
       .is("parent_id", null)
@@ -145,7 +147,7 @@ const CommentsSection = () => {
     }
 
     // Load all replies
-    const { data: allReplies, error: repliesError } = await supabase
+    const { data: allReplies, error: repliesError } = await client
       .from("comments")
       .select("*")
       .not("parent_id", "is", null)
@@ -176,7 +178,7 @@ const CommentsSection = () => {
   };
 
   const handleSignIn = async (provider: Provider) => {
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await client.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: window.location.origin,
@@ -190,7 +192,7 @@ const CommentsSection = () => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await client.auth.signOut();
     toast.success("Signed out successfully");
   };
 
@@ -219,7 +221,7 @@ const CommentsSection = () => {
       parent_id: replyingTo || null,
     };
 
-    const { error } = await supabase.from("comments").insert([commentData]);
+    const { error } = await client.from("comments").insert([commentData]);
 
     if (error) {
       toast.error("Failed to post comment");
@@ -241,7 +243,7 @@ const CommentsSection = () => {
   };
 
   const handleDeleteComment = async (id: number) => {
-    const { data: targetComment, error: targetError } = await supabase
+    const { data: targetComment, error: targetError } = await client
       .from("comments")
       .select("id,parent_id")
       .eq("id", id)
@@ -253,7 +255,7 @@ const CommentsSection = () => {
     }
 
     if (targetComment.parent_id === null) {
-      const { error: repliesError } = await supabase
+      const { error: repliesError } = await client
         .from("comments")
         .delete()
         .eq("parent_id", id);
@@ -263,7 +265,7 @@ const CommentsSection = () => {
       }
     }
 
-    const { data: deletedRows, error: deleteError } = await supabase
+    const { data: deletedRows, error: deleteError } = await client
       .from("comments")
       .delete()
       .eq("id", id)
@@ -330,13 +332,13 @@ const CommentsSection = () => {
 
         {/* Sign In / Comment Form */}
         {authLoading ? (
-          <div className="bg-white border border-gray-300 rounded-2xl p-8 mb-8 flex items-center justify-center">
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             <span className="ml-3 text-gray-600">Loading...</span>
           </div>
         ) : !user ? (
           <div className="bg-white border border-gray-300 rounded-2xl p-8 mb-8">
-            <h3 className="text-xl font-semibold mb-6 text-gray-900">
+            <h3 className="text-xl font-semibold mb-6 text-black">
               Sign in to leave a comment
             </h3>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -349,7 +351,7 @@ const CommentsSection = () => {
               </button>
               <button
                 onClick={() => handleSignIn("google")}
-                className="flex-1 px-6 py-3 bg-white border-2 border-gray-300 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
+                className="flex-1 px-6 py-3 bg-white border-2 border-gray-200 text-gray-600 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-100 hover:text-black transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <SiGoogle className="w-4 h-5 sm:w-3 sm:h-3" />
                 Sign in with Google
@@ -357,7 +359,7 @@ const CommentsSection = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white border border-gray-300 rounded-2xl p-8 mb-8">
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <img
@@ -369,7 +371,7 @@ const CommentsSection = () => {
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-black">
                     {user.user_metadata.full_name || user.email?.split("@")[0]}
                   </p>
                   <p className="text-sm text-gray-600">{user.email}</p>
@@ -377,7 +379,7 @@ const CommentsSection = () => {
               </div>
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium cursor-pointer"
+                className="px-4 py-2 text-sm text-gray-600 hover:text-black font-medium cursor-pointer"
               >
                 Sign Out
               </button>
@@ -385,12 +387,12 @@ const CommentsSection = () => {
 
             {/* Reply indicator */}
             {replyingTo && (
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-blue-700">Replying to a comment</p>
+                  <p className="text-sm text-gray-600">Replying to a comment</p>
                   <button
                     onClick={cancelReply}
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="text-sm text-gray-600 hover:text-black"
                   >
                     Cancel
                   </button>
@@ -410,7 +412,7 @@ const CommentsSection = () => {
                   replyingTo ? "Write your reply..." : "Share your thoughts..."
                 }
                 rows={3}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300 resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:bg-white transition-all duration-300 resize-none"
                 required
               />
               <div className="flex gap-2 mt-4">
@@ -432,7 +434,7 @@ const CommentsSection = () => {
                   <button
                     type="button"
                     onClick={cancelReply}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-300"
+                    className="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-300 hover:text-black transition-all duration-300"
                   >
                     Cancel
                   </button>
@@ -449,7 +451,7 @@ const CommentsSection = () => {
               <div className="w-24 h-24 mb-6 bg-gray-100 rounded-full flex items-center justify-center">
                 <MessageCircle className="w-12 h-12 text-gray-400" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3 text-gray-900">
+              <h3 className="text-2xl font-semibold mb-3 text-black">
                 No comments yet
               </h3>
               <p className="text-gray-600 text-lg">
@@ -474,6 +476,24 @@ const CommentsSection = () => {
       </div>
     </motion.section>
   );
+};
+
+const CommentsSection = () => {
+  if (!supabase) {
+    return (
+      <section id="comments" className="px-4 py-12 sm:py-16 md:py-20">
+        <div className="mx-auto max-w-4xl rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg sm:p-8">
+          <MessageCircle className="mx-auto mb-4 h-10 w-10 text-gray-600" />
+          <h2 className="text-2xl font-bold text-black">Comments</h2>
+          <p className="mt-2 text-gray-600">
+            Comments are temporarily unavailable. Please check back soon.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return <CommentsSectionContent />;
 };
 
 export default CommentsSection;

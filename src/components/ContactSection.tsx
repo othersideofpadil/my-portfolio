@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mail, Github, Linkedin, Send } from "lucide-react";
 import { motion } from "framer-motion";
+import SectionHeading from "./SectionHeading";
 import { sendEmail } from "../lib/emailjs";
 import toast from "react-hot-toast";
 import type { ChangeEvent, FormEvent } from "react";
@@ -95,21 +96,18 @@ const ContactSection = () => {
       label: "Email",
       value: "padilajalah88@gmail.com",
       href: "mailto:padilajalah88@gmail.com",
-      gradient: "from-gray-800 to-gray-600",
     },
     {
       icon: Github,
       label: "GitHub",
       value: "@othersideofpadil",
       href: "https://github.com/othersideofpadil",
-      gradient: "from-gray-700 to-gray-900",
     },
     {
       icon: Linkedin,
       label: "LinkedIn",
       value: "Muhammad Fadhillah",
       href: "https://www.linkedin.com/in/muhammad-fadhillah-52bb73254",
-      gradient: "from-gray-800 to-gray-600",
     },
   ];
 
@@ -123,15 +121,7 @@ const ContactSection = () => {
       transition={{ duration: 0.6 }}
     >
       <div className="max-w-4xl mx-auto">
-        <motion.h2
-          className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 sm:mb-12 md:mb-16 bg-linear-to-r from-black to-gray-600 bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Let's Work Together!
-        </motion.h2>
+        <SectionHeading index="03" eyebrow="Get in touch" title="Let's Work Together" />
 
         {/* Contact Links */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10 md:mb-12">
@@ -147,19 +137,19 @@ const ContactSection = () => {
                     ? "noopener noreferrer"
                     : undefined
                 }
-                className="bg-white border border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center hover:shadow-xl transition-all duration-300 group"
+                className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 text-center hover:shadow-xl hover:shadow-gray-200 hover:border-gray-400 transition-all duration-300 group"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ y: -4 }}
               >
                 <div
-                  className={`w-16 h-16 mx-auto mb-4 bg-linear-to-br ${link.gradient} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                  className="w-14 h-14 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center group-hover:bg-gray-200 group-hover:scale-105 transition-all duration-300"
                 >
-                  <Icon className="w-8 h-8 text-white" />
+                  <Icon className="w-7 h-7 text-gray-600 group-hover:text-black" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2 text-gray-900">
+                <h3 className="font-semibold text-lg mb-2 text-black">
                   {link.label}
                 </h3>
                 <p className="text-gray-600 text-sm break-all">{link.value}</p>
@@ -170,7 +160,7 @@ const ContactSection = () => {
 
         {/* Contact Form */}
         <motion.div
-          className="bg-white border border-gray-300 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg"
+          className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -180,7 +170,7 @@ const ContactSection = () => {
             <div>
               <label
                 htmlFor="from_name"
-                className="block text-sm font-semibold mb-2 text-gray-900"
+                className="block text-sm font-semibold mb-2 text-black"
               >
                 Name <span className="text-red-500">*</span>
               </label>
@@ -190,7 +180,7 @@ const ContactSection = () => {
                 name="from_name"
                 value={formData.from_name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 focus:bg-white transition-all duration-300"
                 placeholder="Your name"
                 required
                 disabled={sending}
@@ -200,7 +190,7 @@ const ContactSection = () => {
             <div>
               <label
                 htmlFor="from_email"
-                className="block text-sm font-semibold mb-2 text-gray-900"
+                className="block text-sm font-semibold mb-2 text-black"
               >
                 Email <span className="text-red-500">*</span>
               </label>
@@ -210,7 +200,7 @@ const ContactSection = () => {
                 name="from_email"
                 value={formData.from_email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 focus:bg-white transition-all duration-300"
                 placeholder="your@email.com"
                 required
                 disabled={sending}
@@ -220,7 +210,7 @@ const ContactSection = () => {
             <div>
               <label
                 htmlFor="message"
-                className="block text-sm font-semibold mb-2 text-gray-900"
+                className="block text-sm font-semibold mb-2 text-black"
               >
                 Message <span className="text-red-500">*</span>
               </label>
@@ -230,12 +220,12 @@ const ContactSection = () => {
                 value={formData.message}
                 onChange={handleChange}
                 rows={5}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-gray-600 focus:bg-white transition-all duration-300 resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 focus:bg-white transition-all duration-300 resize-none"
                 placeholder="Your message..."
                 required
                 disabled={sending}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-600 mt-1">
                 {formData.message.length} characters
               </p>
             </div>
@@ -243,7 +233,7 @@ const ContactSection = () => {
             <button
               type="submit"
               disabled={sending}
-              className="w-full px-8 py-4 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+              className="w-full px-8 py-4 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
             >
               {sending ? (
                 <>

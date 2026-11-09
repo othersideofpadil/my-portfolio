@@ -1,32 +1,25 @@
 import { motion } from "framer-motion";
+import { ArrowUp } from "lucide-react";
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
-  return (
-    <motion.footer
-      className="text-white py-6 sm:py-8"
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-    >
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Copyright */}
-        <motion.div
-          className="text-center bg-linear-to-r from-black to-gray-600 bg-clip-text text-transparent text-xs sm:text-sm"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <p className="flex items-center justify-center gap-1 flex-wrap">
-            © {currentYear} Muhammad Fadhillah. All rights reserved.
-          </p>
-        </motion.div>
-      </div>
-    </motion.footer>
-  );
-};
+const Footer = () => (
+  <motion.footer
+    className="border-t border-line py-8"
+    initial={{ opacity: 0 }}
+    whileInView={{ opacity: 1 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+  >
+    <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-ink-mute sm:flex-row">
+      <p>© {new Date().getFullYear()} Muhammad Fadhillah. All rights reserved.</p>
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-accent/40 hover:text-accent"
+      >
+        <ArrowUp className="h-3.5 w-3.5" />
+        Back to top
+      </button>
+    </div>
+  </motion.footer>
+);
 
 export default Footer;

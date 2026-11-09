@@ -81,7 +81,7 @@ const CommentItem = ({
             `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user_name)}&background=${isCurrentUser ? "000" : "666"}&color=fff`
           }
           alt={comment.user_name}
-          className="w-10 h-10 rounded-full border-2 border-gray-300 shrink-0"
+          className="w-10 h-10 rounded-full border-2 border-gray-200 shrink-0"
           onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user_name)}&background=${isCurrentUser ? "000" : "666"}&color=fff`;
@@ -96,7 +96,7 @@ const CommentItem = ({
           <div
             className={`flex items-center gap-2 mb-1 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
           >
-            <span className="font-semibold text-sm text-gray-900">
+            <span className="font-semibold text-sm text-black">
               {isCurrentUser ? "You" : comment.user_name}
             </span>
             {isPortfolioOwner(comment.user_email) && (
@@ -104,7 +104,7 @@ const CommentItem = ({
                 Owner
               </span>
             )}
-            <span className="text-xs text-gray-500">{timeAgo}</span>
+            <span className="text-xs text-gray-600">{timeAgo}</span>
           </div>
 
           {/* Comment Bubble */}
@@ -127,7 +127,7 @@ const CommentItem = ({
             {!isCurrentUser && currentUser && (
               <button
                 onClick={() => onReply(comment.id, comment.user_name)}
-                className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1 transition-colors"
+                className="text-xs text-gray-600 hover:text-black font-medium flex items-center gap-1 transition-colors"
               >
                 <Reply className="w-3 h-3" />
                 Reply
@@ -174,7 +174,7 @@ const CommentItem = ({
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}&background=${isReplyByCurrentUser ? "000" : "666"}&color=fff`
                   }
                   alt={reply.user_name}
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 shrink-0"
+                  className="w-8 h-8 rounded-full border-2 border-gray-200 shrink-0"
                   onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}&background=${isReplyByCurrentUser ? "000" : "666"}&color=fff`;
@@ -189,7 +189,7 @@ const CommentItem = ({
                   <div
                     className={`flex items-center gap-2 mb-1 ${isReplyByCurrentUser ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    <span className="font-semibold text-xs text-gray-900">
+                    <span className="font-semibold text-xs text-black">
                       {isReplyByCurrentUser ? "You" : reply.user_name}
                     </span>
                     {isPortfolioOwner(reply.user_email) && (
@@ -197,7 +197,7 @@ const CommentItem = ({
                         Owner
                       </span>
                     )}
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-600">
                       {replyTimeAgo}
                     </span>
                   </div>
@@ -206,8 +206,8 @@ const CommentItem = ({
                   <div
                     className={`px-4 py-2 rounded-2xl wrap-break-word ${
                       isReplyByCurrentUser
-                        ? "bg-white text-black border border-gray-300 rounded-br-sm"
-                        : "bg-white text-black border border-gray-300 rounded-bl-sm"
+                        ? "bg-white text-black border border-gray-200 rounded-br-sm"
+                        : "bg-white text-black border border-gray-200 rounded-bl-sm"
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">

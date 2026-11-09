@@ -1,136 +1,119 @@
-import {
-  Home,
-  GraduationCap,
-  Folder,
-  MessageSquare,
-  Mail,
-  Menu,
-  X,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { MouseEvent } from "react";
 
-type NavigationProps = {
-  activeSection: string;
-};
+type NavigationProps = { activeSection: string };
+
+const navItems = [
+  { id: "about", label: "Home" },
+  { id: "projects", label: "Projects" },
+  { id: "comments", label: "Comments" },
+  { id: "contact", label: "Contact" },
+];
 
 const Navigation = ({ activeSection }: NavigationProps) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const navItems = [
-    { id: "about", icon: Home, label: "Home" },
-    // { id: "education", icon: GraduationCap, label: "Education" },
-    { id: "projects", icon: Folder, label: "Projects" },
-    { id: "comments", icon: MessageSquare, label: "Comments" },
-    { id: "contact", icon: Mail, label: "Contact" },
-  ];
-
-  // Close mobile menu on ESC key
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsMobileMenuOpen(false);
-      }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
     };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const handleNavClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    const href = e.currentTarget.getAttribute("href") ?? "";
-    const targetId = href.slice(1);
-    const targetElement = document.getElementById(targetId);
-
-    if (targetElement) {
-      const offset = 80;
-      const elementPosition = targetElement.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
+    const targetId = (e.currentTarget.getAttribute("href") ?? "").slice(1);
+    const el = document.getElementById(targetId);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top, behavior: "smooth" });
     }
-
-    setIsMobileMenuOpen(false);
+    setOpen(false);
   };
 
   return (
-    <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray/80 backdrop-blur-lg ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center md:justify-center h-16 relative">
-            {/* Mobile menu button - Absolute positioned on left */}
-            <div className="md:hidden absolute left-0">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                aria-label="Toggle menu"
-                aria-expanded={isMobileMenuOpen}
-              >
-                {isMobileMenuOpen ? (
-                  <X className="w-6 h-6" />
-                ) : (
-                  <Menu className="w-6 h-6" />
-                )}
-              </button>
-            </div>
+    <nav className="fixed inset-x-0 top-3 z-50 flex flex-col items-center px-4">
+      {/* Desktop */}
+      <div
+        className={`hidden items-center gap-1 rounded-full border border-gray-200 bg-white/80 p-1.5 backdrop-blur-xl transition-shadow md:flex ${
+          scrolled ? "shadow-lg shadow-black/5" : "shadow-sm"
+        }`}
+      >
+        {navItems.map(({ id, label }) => (
+          <a
+            key={id}
+            href={`#${id}`}
+            onClick={handleNavClick}
+            className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              activeSection === id
+                ? "text-black"
+                : "text-gray-600 hover:bg-gray-100 hover:text-black"
+            }`}
+          >
+            {activeSection === id && (
+              <motion.span
+                layoutId="nav-pill"
+                className="absolute inset-0 rounded-full bg-gray-200"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+            <span className="relative">{label}</span>
+          </a>
+        ))}
+      </div>
 
-            {/* Desktop Navigation - Centered */}
-            <div className="hidden md:flex items-center space-x-1">
-              {navItems.map(({ id, icon: Icon, label }) => (
-                <a
-                  key={id}
-                  href={`#${id}`}
-                  onClick={handleNavClick}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeSection === id
-                      ? "text-white bg-black"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-96" : "max-h-0"
-          }`}
+      {/* Mobile */}
+      <div className="flex w-full items-center justify-between rounded-full border border-line bg-white/80 py-1.5 pl-5 pr-1.5 shadow-sm backdrop-blur-xl md:hidden">
+        <img
+          src="/logo.jpeg"
+          alt="Logo"
+          className="h-10 w-10 rounded-full object-cover"
+        />
+        <button
+          onClick={() => setOpen(!open)}
+          className="rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-black"
+          aria-label="Toggle menu"
+          aria-expanded={open}
         >
-          <div className="px-4 py-3 space-y-1 backdrop-blur-lg">
-            {navItems.map(({ id, icon: Icon, label }) => (
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mt-2 w-full rounded-3xl border border-gray-200 bg-white/95 p-2 shadow-xl shadow-black/5 backdrop-blur-xl md:hidden"
+          >
+            {navItems.map(({ id, label }) => (
               <a
                 key={id}
                 href={`#${id}`}
                 onClick={handleNavClick}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                className={`block rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
                   activeSection === id
-                    ? "bg-black text-white"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-gray-200 text-black"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-black"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{label}</span>
-                {activeSection === id && (
-                  <div className="ml-auto w-2 h-2 backdrop-blur-lg rounded-full" />
-                )}
+                {label}
               </a>
             ))}
-          </div>
-        </div>
-      </nav>
-
-      {/* Spacer */}
-      <div className="h-16" />
-    </>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   );
 };
 
