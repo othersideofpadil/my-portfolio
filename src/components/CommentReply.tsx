@@ -81,7 +81,7 @@ const CommentItem = ({
             `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user_name)}&background=${isCurrentUser ? "000" : "666"}&color=fff`
           }
           alt={comment.user_name}
-          className="w-10 h-10 rounded-full border-2 border-gray-200 shrink-0"
+          className="w-10 h-10 rounded-full border-2 border-line shrink-0"
           onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user_name)}&background=${isCurrentUser ? "000" : "666"}&color=fff`;
@@ -96,23 +96,23 @@ const CommentItem = ({
           <div
             className={`flex items-center gap-2 mb-1 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
           >
-            <span className="font-semibold text-sm text-black">
+            <span className="font-semibold text-sm text-ink">
               {isCurrentUser ? "You" : comment.user_name}
             </span>
             {isPortfolioOwner(comment.user_email) && (
-              <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+              <span className="rounded-full border border-accent/20 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
                 Owner
               </span>
             )}
-            <span className="text-xs text-gray-600">{timeAgo}</span>
+            <span className="text-xs text-ink-mute">{timeAgo}</span>
           </div>
 
           {/* Comment Bubble */}
           <div
             className={`px-4 py-3 rounded-2xl wrap-break-word ${
               isCurrentUser
-                ? "bg-black text-white rounded-br-sm"
-                : "bg-gray-800 text-white rounded-bl-sm"
+                ? "bg-[#0969DA] text-[#FAFBFD] rounded-br-sm"
+                : "bg-[#FAFBFD] text-[#1F2328] border border-[#D0D7DE] rounded-bl-sm"
             }`}
           >
             <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -127,7 +127,7 @@ const CommentItem = ({
             {!isCurrentUser && currentUser && (
               <button
                 onClick={() => onReply(comment.id, comment.user_name)}
-                className="text-xs text-gray-600 hover:text-black font-medium flex items-center gap-1 transition-colors"
+                className="text-xs text-ink-soft hover:text-ink font-medium flex items-center gap-1 transition-colors"
               >
                 <Reply className="w-3 h-3" />
                 Reply
@@ -148,7 +148,7 @@ const CommentItem = ({
 
       {/* Replies */}
       {hasReplies && (
-        <div className="ml-12 space-y-3 border-l-2 border-gray-200 pl-4">
+        <div className="ml-12 space-y-3 border-l-2 border-line pl-4">
           {comment.replies.map((reply) => {
             const isReplyByCurrentUser = currentUser?.id === reply.user_id;
             const canDeleteReply = isReplyByCurrentUser || currentUserIsOwner;
@@ -174,7 +174,7 @@ const CommentItem = ({
                     `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}&background=${isReplyByCurrentUser ? "000" : "666"}&color=fff`
                   }
                   alt={reply.user_name}
-                  className="w-8 h-8 rounded-full border-2 border-gray-200 shrink-0"
+                  className="w-8 h-8 rounded-full border-2 border-line shrink-0"
                   onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user_name)}&background=${isReplyByCurrentUser ? "000" : "666"}&color=fff`;
@@ -189,15 +189,15 @@ const CommentItem = ({
                   <div
                     className={`flex items-center gap-2 mb-1 ${isReplyByCurrentUser ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    <span className="font-semibold text-xs text-black">
+                    <span className="font-semibold text-xs text-ink">
                       {isReplyByCurrentUser ? "You" : reply.user_name}
                     </span>
                     {isPortfolioOwner(reply.user_email) && (
-                      <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                      <span className="rounded-full border border-accent/20 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
                         Owner
                       </span>
                     )}
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-ink-mute">
                       {replyTimeAgo}
                     </span>
                   </div>
@@ -206,8 +206,8 @@ const CommentItem = ({
                   <div
                     className={`px-4 py-2 rounded-2xl wrap-break-word ${
                       isReplyByCurrentUser
-                        ? "bg-white text-black border border-gray-200 rounded-br-sm"
-                        : "bg-white text-black border border-gray-200 rounded-bl-sm"
+                        ? "bg-[#FAFBFD] text-[#1F2328] border border-[#D0D7DE] rounded-br-sm"
+                        : "bg-[#FAFBFD] text-[#1F2328] border border-[#D0D7DE] rounded-bl-sm"
                     }`}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">

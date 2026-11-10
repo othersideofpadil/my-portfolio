@@ -53,7 +53,7 @@ function App() {
         <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
       )}
 
-      <div className="min-h-screen text-gray-900 w-full overflow-x-hidden">
+      <div className="min-h-screen bg-[#F4F6F8] text-[#1F2328] w-full overflow-x-hidden">
         <Toaster position="top-right" />
 
         <Navigation activeSection={activeSection} />

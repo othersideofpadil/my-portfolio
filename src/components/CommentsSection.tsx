@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Github } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { motion } from "framer-motion";
-import { getSupabaseClient, supabase } from "../lib/supabase";
+import { getSupabaseClient } from "../lib/supabase";
 import toast from "react-hot-toast";
+import SectionHeading from "./SectionHeading";
 import CommentItem from "./CommentReply";
 import type { FormEvent, ChangeEvent } from "react";
 import type { Provider, User } from "@supabase/supabase-js";
@@ -23,6 +24,8 @@ type CommentWithReplies = CommentReplyItem & {
   replies: CommentReplyItem[];
 };
 
+const getClient = getSupabaseClient;
+
 const getUserAvatarUrl = (user: User | null): string | null => {
   if (!user) return null;
 
@@ -38,9 +41,7 @@ const getUserAvatarUrl = (user: User | null): string | null => {
   return avatarFromMetadata;
 };
 
-const CommentsSectionContent = () => {
-  const client = getSupabaseClient();
-
+const CommentsSection = () => {
   const [user, setUser] = useState<User | null>(null);
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -57,6 +58,13 @@ const CommentsSectionContent = () => {
     let hasShownWelcome = false;
 
     const initializeAuth = async () => {
+      const client = getClient();
+
+      if (!client) {
+        if (isMounted) setAuthLoading(false);
+        return;
+      }
+
       try {
         // Get current session
         const {
@@ -73,6 +81,14 @@ const CommentsSectionContent = () => {
     };
 
     initializeAuth();
+
+    const client = getClient();
+    if (!client) {
+      setAuthLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
 
     // Auth state listener
     const {
@@ -134,6 +150,9 @@ const CommentsSectionContent = () => {
   };
 
   const loadComments = async () => {
+    const client = getClient();
+    if (!client) return;
+
     // Load parent comments (where parent_id is null)
     const { data: parentComments, error: parentError } = await client
       .from("comments")
@@ -178,6 +197,12 @@ const CommentsSectionContent = () => {
   };
 
   const handleSignIn = async (provider: Provider) => {
+    const client = getClient();
+    if (!client) {
+      toast.error("Comments are unavailable right now");
+      return;
+    }
+
     const { error } = await client.auth.signInWithOAuth({
       provider,
       options: {
@@ -192,6 +217,9 @@ const CommentsSectionContent = () => {
   };
 
   const handleSignOut = async () => {
+    const client = getClient();
+    if (!client) return;
+
     await client.auth.signOut();
     toast.success("Signed out successfully");
   };
@@ -205,6 +233,13 @@ const CommentsSectionContent = () => {
     setLoading(true);
 
     if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const client = getClient();
+    if (!client) {
+      toast.error("Comments are unavailable right now");
       setLoading(false);
       return;
     }
@@ -243,6 +278,12 @@ const CommentsSectionContent = () => {
   };
 
   const handleDeleteComment = async (id: number) => {
+    const client = getClient();
+    if (!client) {
+      toast.error("Comments are unavailable right now");
+      return;
+    }
+
     const { data: targetComment, error: targetError } = await client
       .from("comments")
       .select("id,parent_id")
@@ -320,38 +361,30 @@ const CommentsSectionContent = () => {
       transition={{ duration: 0.6 }}
     >
       <div className="max-w-4xl mx-auto">
-        <motion.h2
-          className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 sm:mb-10 md:mb-12 bg-linear-to-r from-black to-gray-600 bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Comments this Portfolio!
-        </motion.h2>
+        <SectionHeading index="02" eyebrow="Guestbook" title="Leave a Comment" />
 
         {/* Sign In / Comment Form */}
         {authLoading ? (
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <span className="ml-3 text-gray-600">Loading...</span>
+          <div className="bg-[#FAFBFD] border border-[#D0D7DE] rounded-3xl p-6 sm:p-8 shadow-sm mb-8 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            <span className="ml-3 text-ink-soft">Loading...</span>
           </div>
         ) : !user ? (
-          <div className="bg-white border border-gray-300 rounded-2xl p-8 mb-8">
-            <h3 className="text-xl font-semibold mb-6 text-black">
+          <div className="bg-[#FAFBFD] border border-[#D0D7DE] rounded-3xl p-6 sm:p-8 shadow-sm mb-8">
+            <h3 className="text-xl font-semibold mb-6 text-ink">
               Sign in to leave a comment
             </h3>
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => handleSignIn("github")}
-                className="flex-1 px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
+                className="flex-1 px-6 py-3 bg-[#0969DA] text-[#FAFBFD] rounded-lg font-semibold hover:bg-[#0550AE] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <Github className="w-5 h-5" />
                 Sign in with GitHub
               </button>
               <button
                 onClick={() => handleSignIn("google")}
-                className="flex-1 px-6 py-3 bg-white border-2 border-gray-200 text-gray-600 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-100 hover:text-black transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
+                className="flex-1 px-6 py-3 bg-[#FAFBFD] border-2 border-[#D0D7DE] rounded-lg font-semibold hover:border-[#0969DA] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer"
               >
                 <SiGoogle className="w-4 h-5 sm:w-3 sm:h-3" />
                 Sign in with Google
@@ -359,7 +392,7 @@ const CommentsSectionContent = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8">
+          <div className="bg-[#FAFBFD] border border-[#D0D7DE] rounded-3xl p-6 sm:p-8 shadow-sm mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <img
@@ -371,15 +404,15 @@ const CommentsSectionContent = () => {
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="font-semibold text-black">
+                  <p className="font-semibold text-ink">
                     {user.user_metadata.full_name || user.email?.split("@")[0]}
                   </p>
-                  <p className="text-sm text-gray-600">{user.email}</p>
+                  <p className="text-sm text-ink-soft">{user.email}</p>
                 </div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-black font-medium cursor-pointer"
+                className="px-4 py-2 text-sm text-ink-soft hover:text-ink font-medium cursor-pointer"
               >
                 Sign Out
               </button>
@@ -387,12 +420,12 @@ const CommentsSectionContent = () => {
 
             {/* Reply indicator */}
             {replyingTo && (
-              <div className="mb-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
+              <div className="mb-4 p-3 bg-accent-soft rounded-lg border border-accent/20">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">Replying to a comment</p>
+                  <p className="text-sm text-accent">Replying to a comment</p>
                   <button
                     onClick={cancelReply}
-                    className="text-sm text-gray-600 hover:text-black"
+                    className="text-sm text-accent hover:text-ink"
                   >
                     Cancel
                   </button>
@@ -412,7 +445,7 @@ const CommentsSectionContent = () => {
                   replyingTo ? "Write your reply..." : "Share your thoughts..."
                 }
                 rows={3}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:bg-white transition-all duration-300 resize-none"
+                className="w-full px-4 py-3 bg-[#F4F6F8] border border-[#D0D7DE] rounded-xl focus:outline-none focus:border-[#0969DA] focus:ring-4 focus:ring-blue-100 focus:bg-[#FAFBFD] transition-all duration-300 resize-none"
                 required
               />
               <div className="flex gap-2 mt-4">
@@ -421,7 +454,7 @@ const CommentsSectionContent = () => {
                   disabled={
                     loading || !(replyingTo ? replyText : newComment).trim()
                   }
-                  className="px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-6 py-3 bg-[#0969DA] text-[#FAFBFD] rounded-lg font-semibold hover:bg-[#0550AE] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {loading
                     ? "Posting..."
@@ -434,7 +467,7 @@ const CommentsSectionContent = () => {
                   <button
                     type="button"
                     onClick={cancelReply}
-                    className="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-300 hover:text-black transition-all duration-300"
+                    className="px-6 py-3 bg-[#F4F6F8] border border-[#D0D7DE] text-[#59636E] rounded-lg font-semibold hover:border-[#0969DA] transition-all duration-300"
                   >
                     Cancel
                   </button>
@@ -445,16 +478,16 @@ const CommentsSectionContent = () => {
         )}
 
         {/* Comments List - CHAT STYLE */}
-        <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 h-150 overflow-y-auto">
+        <div className="bg-[#F4F6F8] rounded-3xl border border-[#D0D7DE] p-4 sm:p-6 h-150 overflow-y-auto">
           {comments.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center">
-              <div className="w-24 h-24 mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                <MessageCircle className="w-12 h-12 text-gray-400" />
+              <div className="w-24 h-24 mb-6 bg-[#FAFBFD] border border-[#D0D7DE] rounded-full flex items-center justify-center">
+                <MessageCircle className="w-12 h-12 text-ink-mute" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3 text-black">
+              <h3 className="text-2xl font-semibold mb-3 text-ink">
                 No comments yet
               </h3>
-              <p className="text-gray-600 text-lg">
+              <p className="text-ink-soft text-lg">
                 Be the first to share your thoughts!
               </p>
             </div>
@@ -476,24 +509,6 @@ const CommentsSectionContent = () => {
       </div>
     </motion.section>
   );
-};
-
-const CommentsSection = () => {
-  if (!supabase) {
-    return (
-      <section id="comments" className="px-4 py-12 sm:py-16 md:py-20">
-        <div className="mx-auto max-w-4xl rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-lg sm:p-8">
-          <MessageCircle className="mx-auto mb-4 h-10 w-10 text-gray-600" />
-          <h2 className="text-2xl font-bold text-black">Comments</h2>
-          <p className="mt-2 text-gray-600">
-            Comments are temporarily unavailable. Please check back soon.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  return <CommentsSectionContent />;
 };
 
 export default CommentsSection;

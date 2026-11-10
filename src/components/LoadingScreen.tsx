@@ -31,21 +31,21 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-100 bg-linear-to-br from-gray-50 via-gray-100 to-gray-200 flex items-center justify-center transition-opacity duration-500 ${
+      className={`fixed inset-0 z-100 bg-[#F4F6F8] flex items-center justify-center transition-opacity duration-500 ${
         !isAnimating ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute w-96 h-96 bg-gray-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob top-0 -left-20"></div>
-        <div className="absolute w-96 h-96 bg-gray-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 top-0 -right-20"></div>
-        <div className="absolute w-96 h-96 bg-gray-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000 bottom-0 left-1/2 transform -translate-x-1/2"></div>
+        <div className="absolute w-96 h-96 bg-[#D0D7DE] rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob top-0 -left-20"></div>
+        <div className="absolute w-96 h-96 bg-[#E9EEF2] rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000 top-0 -right-20"></div>
+        <div className="absolute w-96 h-96 bg-[#D0D7DE] rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000 bottom-0 left-1/2 transform -translate-x-1/2"></div>
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-8 px-4">
         {/* Logo with pulse animation */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gray-400 blur-2xl opacity-30 animate-pulse"></div>
+          <div className="absolute inset-0 bg-[#D0D7DE] blur-2xl opacity-30 animate-pulse"></div>
           <img
             src="/logo.jpeg"
             alt="Logo"
@@ -56,7 +56,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         {/* Name with typing effect */}
         <div className="text-center space-y-2 sm:space-y-3">
           <h1
-            className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight transition-all duration-700 ${
+            className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1F2328] tracking-tight transition-all duration-700 ${
               progress > 20
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-4"
@@ -65,7 +65,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
             Muhammad Fadhillah
           </h1>
           <p
-            className={`text-base sm:text-lg md:text-xl text-gray-700 font-medium transition-all duration-700 delay-200 ${
+            className={`text-base sm:text-lg md:text-xl text-[#59636E] font-medium transition-all duration-700 delay-200 ${
               progress > 40
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-4"
@@ -83,15 +83,15 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
               : "opacity-0 translate-y-4"
           }`}
         >
-          <div className="relative h-1.5 sm:h-2 bg-gray-300 rounded-full overflow-hidden shadow-inner">
+          <div className="relative h-1.5 sm:h-2 bg-[#D0D7DE] rounded-full overflow-hidden shadow-inner">
             <div
-              className="absolute inset-y-0 left-0 bg-linear-to-r from-gray-800 via-gray-900 to-gray-800 rounded-full transition-all duration-300 ease-out shadow-lg"
+              className="absolute inset-y-0 left-0 bg-[#0969DA] rounded-full transition-all duration-300 ease-out shadow-lg"
               style={{ width: `${progress}%` }}
             >
               <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 text-center text-xs sm:text-sm text-gray-600 font-medium">
+          <div className="mt-2 sm:mt-3 text-center text-xs sm:text-sm text-[#59636E] font-medium">
             {progress}%
           </div>
         </div>

@@ -18,10 +18,4 @@ export const supabase =
       })
     : null;
 
-export const getSupabaseClient = (): SupabaseClient => {
-  if (!supabase) {
-    throw new Error("Supabase is not configured");
-  }
-
-  return supabase;
-};
+export const getSupabaseClient = (): SupabaseClient | null => supabase;

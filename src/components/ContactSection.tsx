@@ -137,7 +137,7 @@ const ContactSection = () => {
                     ? "noopener noreferrer"
                     : undefined
                 }
-                className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 text-center hover:shadow-xl hover:shadow-gray-200 hover:border-gray-400 transition-all duration-300 group"
+                className="bg-[#FAFBFD] border border-[#D0D7DE] rounded-2xl p-4 sm:p-6 text-center hover:shadow-xl hover:shadow-blue-100 hover:border-[#0969DA] transition-all duration-300 group"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -145,14 +145,14 @@ const ContactSection = () => {
                 whileHover={{ y: -4 }}
               >
                 <div
-                  className="w-14 h-14 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center group-hover:bg-gray-200 group-hover:scale-105 transition-all duration-300"
+                  className="w-14 h-14 mx-auto mb-4 bg-[#E9EEF2] rounded-2xl flex items-center justify-center group-hover:bg-[#E9EEF2] group-hover:scale-105 transition-all duration-300"
                 >
-                  <Icon className="w-7 h-7 text-gray-600 group-hover:text-black" />
+                  <Icon className="w-7 h-7 text-[#59636E] group-hover:text-[#0969DA]" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2 text-black">
+                <h3 className="font-semibold text-lg mb-2 text-[#1F2328]">
                   {link.label}
                 </h3>
-                <p className="text-gray-600 text-sm break-all">{link.value}</p>
+                <p className="text-[#59636E] text-sm break-all">{link.value}</p>
               </motion.a>
             );
           })}
@@ -160,7 +160,7 @@ const ContactSection = () => {
 
         {/* Contact Form */}
         <motion.div
-          className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg"
+          className="bg-[#FAFBFD] border border-[#D0D7DE] rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -170,7 +170,7 @@ const ContactSection = () => {
             <div>
               <label
                 htmlFor="from_name"
-                className="block text-sm font-semibold mb-2 text-black"
+                className="block text-sm font-semibold mb-2 text-[#1F2328]"
               >
                 Name <span className="text-red-500">*</span>
               </label>
@@ -180,7 +180,7 @@ const ContactSection = () => {
                 name="from_name"
                 value={formData.from_name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 focus:bg-white transition-all duration-300"
+                className="w-full px-4 py-3 bg-[#F4F6F8] border border-[#D0D7DE] rounded-xl focus:outline-none focus:border-[#0969DA] focus:ring-4 focus:ring-blue-100 focus:bg-[#FAFBFD] transition-all duration-300"
                 placeholder="Your name"
                 required
                 disabled={sending}
@@ -190,7 +190,7 @@ const ContactSection = () => {
             <div>
               <label
                 htmlFor="from_email"
-                className="block text-sm font-semibold mb-2 text-black"
+                className="block text-sm font-semibold mb-2 text-[#1F2328]"
               >
                 Email <span className="text-red-500">*</span>
               </label>
@@ -200,7 +200,7 @@ const ContactSection = () => {
                 name="from_email"
                 value={formData.from_email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 focus:bg-white transition-all duration-300"
+                className="w-full px-4 py-3 bg-[#F4F6F8] border border-[#D0D7DE] rounded-xl focus:outline-none focus:border-[#0969DA] focus:ring-4 focus:ring-blue-100 focus:bg-[#FAFBFD] transition-all duration-300"
                 placeholder="your@email.com"
                 required
                 disabled={sending}
@@ -210,7 +210,7 @@ const ContactSection = () => {
             <div>
               <label
                 htmlFor="message"
-                className="block text-sm font-semibold mb-2 text-black"
+                className="block text-sm font-semibold mb-2 text-[#1F2328]"
               >
                 Message <span className="text-red-500">*</span>
               </label>
@@ -220,12 +220,12 @@ const ContactSection = () => {
                 value={formData.message}
                 onChange={handleChange}
                 rows={5}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 focus:bg-white transition-all duration-300 resize-none"
+                className="w-full px-4 py-3 bg-[#F4F6F8] border border-[#D0D7DE] rounded-xl focus:outline-none focus:border-[#0969DA] focus:ring-4 focus:ring-blue-100 focus:bg-[#FAFBFD] transition-all duration-300 resize-none"
                 placeholder="Your message..."
                 required
                 disabled={sending}
               />
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-[#59636E] mt-1">
                 {formData.message.length} characters
               </p>
             </div>
@@ -233,7 +233,7 @@ const ContactSection = () => {
             <button
               type="submit"
               disabled={sending}
-              className="w-full px-8 py-4 bg-black text-white rounded-full font-semibold hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+              className="w-full px-8 py-4 bg-[#0969DA] text-[#FAFBFD] rounded-full font-semibold hover:bg-[#0550AE] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-95"
             >
               {sending ? (
                 <>

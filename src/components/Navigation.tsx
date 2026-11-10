@@ -2,15 +2,9 @@ import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MouseEvent } from "react";
+import { navItems } from "../lib/utils";
 
 type NavigationProps = { activeSection: string };
-
-const navItems = [
-  { id: "about", label: "Home" },
-  { id: "projects", label: "Projects" },
-  { id: "comments", label: "Comments" },
-  { id: "contact", label: "Contact" },
-];
 
 const Navigation = ({ activeSection }: NavigationProps) => {
   const [open, setOpen] = useState(false);
@@ -44,7 +38,7 @@ const Navigation = ({ activeSection }: NavigationProps) => {
     <nav className="fixed inset-x-0 top-3 z-50 flex flex-col items-center px-4">
       {/* Desktop */}
       <div
-        className={`hidden items-center gap-1 rounded-full border border-gray-200 bg-white/80 p-1.5 backdrop-blur-xl transition-shadow md:flex ${
+        className={`hidden items-center gap-1 rounded-full border border-[#D0D7DE] bg-[#FAFBFD]/80 p-1.5 backdrop-blur-xl transition-shadow md:flex ${
           scrolled ? "shadow-lg shadow-black/5" : "shadow-sm"
         }`}
       >
@@ -55,14 +49,14 @@ const Navigation = ({ activeSection }: NavigationProps) => {
             onClick={handleNavClick}
             className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
               activeSection === id
-                ? "text-black"
-                : "text-gray-600 hover:bg-gray-100 hover:text-black"
+                ? "text-[#1F2328]"
+                : "text-[#59636E] hover:bg-[#E9EEF2] hover:text-[#1F2328]"
             }`}
           >
             {activeSection === id && (
               <motion.span
                 layoutId="nav-pill"
-                className="absolute inset-0 rounded-full bg-gray-200"
+                className="absolute inset-0 rounded-full bg-[#E9EEF2]"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
@@ -72,7 +66,7 @@ const Navigation = ({ activeSection }: NavigationProps) => {
       </div>
 
       {/* Mobile */}
-      <div className="flex w-full items-center justify-between rounded-full border border-line bg-white/80 py-1.5 pl-5 pr-1.5 shadow-sm backdrop-blur-xl md:hidden">
+      <div className="flex w-full items-center justify-between rounded-full border border-[#D0D7DE] bg-[#FAFBFD]/80 py-1.5 pl-5 pr-1.5 shadow-sm backdrop-blur-xl md:hidden">
         <img
           src="/logo.jpeg"
           alt="Logo"
@@ -80,7 +74,7 @@ const Navigation = ({ activeSection }: NavigationProps) => {
         />
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-black"
+          className="rounded-full p-2 text-[#59636E] transition-colors hover:bg-[#E9EEF2] hover:text-[#1F2328]"
           aria-label="Toggle menu"
           aria-expanded={open}
         >
@@ -94,7 +88,7 @@ const Navigation = ({ activeSection }: NavigationProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mt-2 w-full rounded-3xl border border-gray-200 bg-white/95 p-2 shadow-xl shadow-black/5 backdrop-blur-xl md:hidden"
+            className="mt-2 w-full rounded-3xl border border-[#D0D7DE] bg-[#FAFBFD]/95 p-2 shadow-xl shadow-black/5 backdrop-blur-xl md:hidden"
           >
             {navItems.map(({ id, label }) => (
               <a
@@ -103,8 +97,8 @@ const Navigation = ({ activeSection }: NavigationProps) => {
                 onClick={handleNavClick}
                 className={`block rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${
                   activeSection === id
-                    ? "bg-gray-200 text-black"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-black"
+                    ? "bg-[#E9EEF2] text-[#1F2328]"
+                    : "text-[#59636E] hover:bg-[#E9EEF2] hover:text-[#1F2328]"
                 }`}
               >
                 {label}
