@@ -1,75 +1,65 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import { Toaster } from "react-hot-toast";
-import Navigation from "./components/Navigation";
-import AboutSection from "./components/AboutSection";
-import EducationSection from "./components/EducationSection";
-import ProjectsSection from "./components/ProjectsSection";
-import CommentsSection from "./components/CommentsSection";
-import ContactSection from "./components/ContactSection";
-import LoadingScreen from "./components/LoadingScreen";
-import Footer from "./components/Footer";
+import Footer from "./components/layout/Footer";
+import LoadingScreen from "./components/layout/LoadingScreen";
+import Navigation from "./components/layout/Navigation";
+import AboutSection from "./components/sections/AboutSection";
+import CommentsSection from "./components/sections/CommentsSection";
+import ContactSection from "./components/sections/ContactSection";
+import ProjectsSection from "./components/sections/ProjectsSection";
+import { navItems } from "./data/navigation";
+import { useActiveSection } from "./hooks/useActiveSection";
 
-function App() {
-  const [activeSection, setActiveSection] = useState<string>("about");
+const SECTION_IDS = navItems.map(({ id }) => id);
+
+const toastOptions = {
+  style: {
+    background: "var(--card)",
+    color: "var(--foreground)",
+    border: "1px solid var(--border)",
+    borderRadius: "1rem",
+  },
+};
+
+const App = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const activeSection = useActiveSection(SECTION_IDS);
 
   useEffect(() => {
-    // Scroll ke top saat pertama kali load/refresh halaman
     window.scrollTo(0, 0);
-
-    // Remove hash dari URL jika ada (dari OAuth redirect)
+    // Drop the hash left by the OAuth redirect without reloading the page.
     if (window.location.hash) {
-      // Use replaceState to remove hash without triggering a page reload
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = document.querySelectorAll<HTMLElement>("section[id]");
-      const scrollPos = window.scrollY + 100; // offset untuk navbar
-
-      sections.forEach((section) => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
-        const sectionId = section.getAttribute("id");
-
-        if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-          setActiveSection(sectionId ?? "about");
-        }
-      });
-    };
-
-    // Set initial active section
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <>
-      {isLoading && (
-        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
-      )}
+    // reducedMotion="user" turns off transform animations for people who ask the OS for less motion.
+    <MotionConfig reducedMotion="user">
+      {isLoading && <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />}
 
-      <div className="min-h-screen bg-[#F4F6F8] text-[#1F2328] w-full overflow-x-hidden">
-        <Toaster position="top-right" />
-
+      <div className="min-h-screen w-full overflow-x-hidden bg-paper text-ink">
+        <a
+          href="#about"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-card"
+        >
+          Skip to content
+        </a>
+        <Toaster position="top-right" toastOptions={toastOptions} />
         <Navigation activeSection={activeSection} />
 
-        <div className="relative z-10 w-full">
+        <main className="relative z-10 w-full">
           <AboutSection />
-          {/* <EducationSection /> */}
           <ProjectsSection />
           <CommentsSection />
           <ContactSection />
-        </div>
+        </main>
 
         <Footer />
       </div>
-    </>
+    </MotionConfig>
   );
-}
+};
 
 export default App;

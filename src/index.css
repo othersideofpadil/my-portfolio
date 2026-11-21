@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 @import "tailwindcss";
 
 @import "tw-animate-css";
@@ -86,8 +84,8 @@ body::before {
   --color-ink-mute: #6E7781;
   --color-paper: #F4F6F8;
   --color-line: #D0D7DE;
-  --color-accent: #0969DA;
   --color-accent-soft: #E9EEF2;
+  --color-accent-strong: #0550AE;
 }
 
 :root {
